@@ -121,3 +121,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+.sidebar-hidden {
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vue-flow__edge {
+  stroke: yellow !important;
+  stroke-width: 4px !important;
+  marker-end: url(#blue-tip);
+}
+.data-source-node {
+  background: #dbeafe;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #2563eb;
+  color: #1e40af;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.modulator-node {
+  background: #ffedd5;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #f59e42;
+  color: #b45309;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.node-config-btn {
+  margin-left: auto;
+  background: #f3f4f6;
+  border-radius: 50%;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+.node-config-btn:hover {
+  background: #e0e7ef;
+}
