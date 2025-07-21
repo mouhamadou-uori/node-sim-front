@@ -1,0 +1,36 @@
+# Informations sur les nœuds et leurs configurations
+
+## Source Modulée
+- Puissance de sortie (dBm) : -10 à 10 dBm
+- Fréquence (GHz) : 190 à 196 THz
+- Type de modulation : NRZ, RZ, QPSK, QAM
+- Débit binaire (Gbps) : 10, 40, 100, 400
+
+## Amplificateur EDFA
+- Gain (dB) : 10 à 30 dB
+- Facteur de bruit (dB) : 4 à 7 dB
+- Puissance de saturation (dBm) : 15 à 23 dBm
+- Mode de contrôle : Gain constant, Puissance constante
+
+## Générateur de signal
+- Fréquence (GHz) : 1 à 40 GHz
+- Amplitude (Vpp) : 0.1 à 2 Vpp
+- Type de signal : Sinusoïdal, Carré, Triangulaire
+- Rapport cyclique (%) : 10 à 90%
+
+## Mesureur de Puissance
+- Plage de mesure (dBm) : -60 à +10 dBm
+- Résolution (dB) : 0.01, 0.1, 1
+- Bande passante (nm) : 1310, 1550, Large bande
+
+## Analyseur de Spectre
+- Plage spectrale (nm) : 1260 à 1640 nm
+- Résolution (nm) : 0.01 à 2 nm
+- Sensibilité (dBm) : -70 à -40 dBm
+- Vitesse de balayage : Lente, Moyenne, Rapide
+
+## Détecteur Optique
+- Sensibilité (A/W) : 0.8 à 1.1 A/W
+- Bande passante (GHz) : 1 à 40 GHz
+- Courant d'obscurité (nA) : 0.5 à 10 nA
+- Tension de polarisation (V) : 0 à 5V 

@@ -1,120 +1,218 @@
 <template>
-  <div
-    :class="[
-      'px-3 py-2 shadow-lg rounded-lg border-2 cursor-move select-none',
-      'bg-white border-gray-200 hover:border-blue-300 transition-colors',
-      'min-w-[120px] text-center',
-      'relative'
-    ]"
-    :style="{
-      width: `${width}px`,
-      height: `${height}px`
-    }"
-  >
-    <div class="flex items-center justify-center space-x-2">
-      <!-- Icône selon le type de nœud -->
-      <span v-if="props.data.nodeType === 'source'">
-        <!-- Source de données : onde -->
+  <div :class="['custom-node', getNodeClass(), { selected: selected }]">
+    <!-- Input Handles (left side) -->
+    <template v-for="(_, index) in inputPorts" :key="`input-${index}`">
+      <Handle
+        :id="`input-${index}`"
+        type="target"
+        :position="Position.Left"
+        :style="{ top: `${(index + 1) * 20 + 10}px` }"
+        class="input-handle"
+      />
+    </template>
+
+    <!-- Output Handles (right side) -->
+    <template v-for="(_, index) in outputPorts" :key="`output-${index}`">
+      <Handle
+        :id="`output-${index}`"
+        type="source"
+        :position="Position.Right"
+        :style="{ top: `${(index + 1) * 20 + 10}px` }"
+        class="output-handle"
+      />
+    </template>
+
+    <!-- Contenu du nœud - texte ou image -->
+    <div v-if="!isImageNode" class="node-content">
+      <!-- Icônes pour les nœuds textuels -->
+      <span v-if="props.data.nodeType === 'source'" class="node-icon source-icon">
         <svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12 Q6 2 12 12 T22 12" stroke="#2563eb" stroke-width="2" fill="none"/></svg>
       </span>
-      <span v-else-if="props.data.nodeType === 'modulator' || props.data.nodeType === 'filter'">
-        <!-- Modulateur : sinus -->
-        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12 Q6 2 12 12 T22 12" stroke="#eab308" stroke-width="2" fill="none"/></svg>
+      <span v-else-if="props.data.nodeType === 'amplifier'" class="node-icon amplifier-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 18 L8 18 L12 6 L16 18 L20 18" stroke="#16a34a" stroke-width="2" fill="none"/></svg>
       </span>
-      <span v-else-if="props.data.nodeType === 'fiber'">
-        <!-- Fibre optique : trait jaune avec bouts bleus -->
-        <svg width="32" height="12" viewBox="0 0 32 12"><line x1="4" y1="6" x2="28" y2="6" stroke="#facc15" stroke-width="4"/><circle cx="4" cy="6" r="4" fill="#2563eb"/><circle cx="28" cy="6" r="4" fill="#2563eb"/></svg>
+      <span v-else-if="props.data.nodeType === 'generator'" class="node-icon generator-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 12 L8 8 L12 12 L16 16 L20 12" stroke="#9333ea" stroke-width="2" fill="none"/></svg>
       </span>
-      <span v-else>
-        <!-- Nœud par défaut -->
-        <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#a3a3a3"/></svg>
-      </span>
-      <span class="text-sm font-medium text-gray-700">{{ label }}</span>
+      <span class="node-label">{{ props.data.label }}</span>
     </div>
 
-    <!-- Ports d'entrée -->
-    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
-      <div
-        v-for="(port, index) in inputPorts"
-        :key="`input-${index}`"
-        class="w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-sm cursor-crosshair"
-        :style="{ top: `${(index + 1) * 20}px` }"
-        @mousedown="onConnectStart($event, 'input', index)"
-      ></div>
-    </div>
-
-    <!-- Ports de sortie -->
-    <div class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1">
-      <div
-        v-for="(port, index) in outputPorts"
-        :key="`output-${index}`"
-        class="w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm cursor-crosshair"
-        :style="{ top: `${(index + 1) * 20}px` }"
-        @mousedown="onConnectStart($event, 'output', index)"
-      ></div>
+    <!-- Nœuds basés sur des images -->
+    <div v-else class="node-image-content">
+      <img 
+        v-if="props.data.image" 
+        :src="`/src/assets/${props.data.image}`" 
+        :alt="props.data.label"
+        class="node-image"
+      />
+      <span class="node-label image-label">{{ props.data.label }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Handle, Position } from '@vue-flow/core'
 import { computed } from 'vue'
 
 interface Props {
   id: string
   type: string
-  position: { x: number; y: number }
+  selected: boolean
   data: {
     label: string
     nodeType: string
     inputPorts?: number
     outputPorts?: number
+    power?: number
+    gain?: number
+    length?: number
+    frequency?: number
+    amplitude?: number
+    signalType?: string
+    dutyCycle?: number
+    noiseLevel?: number
+    bandwidth?: number
+    resolution?: number
+    sensitivity?: number
+    category?: string
+    image?: string
   }
-  width?: number
-  height?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  width: 120,
-  height: 60,
   data: () => ({
     label: 'Node',
     nodeType: 'default',
     inputPorts: 1,
-    outputPorts: 1
+    outputPorts: 1,
+    category: 'text'
   })
 })
 
-const emit = defineEmits<{
-  connectStart: [event: MouseEvent, type: string, portIndex: number]
-}>()
+const inputPorts = computed(() => Array(props.data.inputPorts || 0).fill(null))
+const outputPorts = computed(() => Array(props.data.outputPorts || 0).fill(null))
 
-const label = computed(() => props.data.label)
-const inputPorts = computed(() => Array(props.data.inputPorts || 1).fill(null))
-const outputPorts = computed(() => Array(props.data.outputPorts || 1).fill(null))
-
-const getNodeColor = () => {
-  const colors = {
-    source: 'bg-blue-500',
-    filter: 'bg-yellow-500',
-    sink: 'bg-red-500',
-    default: 'bg-gray-500'
+const getNodeClass = () => {
+  const classes = {
+    source: 'node-source',
+    amplifier: 'node-amplifier',
+    generator: 'node-generator',
+    power_meter: 'node-power-meter',
+    spectrum_analyzer: 'node-spectrum-analyzer',
+    optical_detector: 'node-optical-detector',
+    laser_generator: 'node-laser-generator',
+    default: 'node-default'
   }
-  return colors[props.data.nodeType as keyof typeof colors] || colors.default
+  return classes[props.data.nodeType as keyof typeof classes] || classes.default
 }
 
-const onConnectStart = (event: MouseEvent, type: string, portIndex: number) => {
-  event.stopPropagation()
-  emit('connectStart', event, type, portIndex)
-}
+const isImageNode = computed(() => props.data.category === 'image')
 </script>
 
 <style scoped>
-/* Styles pour les ports de connexion */
-.port {
+.custom-node {
+  min-width: 120px;
+  min-height: 60px;
+  padding: 10px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
   transition: all 0.2s ease;
 }
 
-.port:hover {
-  transform: scale(1.2);
+.custom-node.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.node-image-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.node-image {
+  width: 100%;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.node-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.image-label {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Node type specific styles */
+.node-source {
+  border-color: #2563eb;
+  background-color: rgba(219, 234, 254, 0.5);
+}
+
+.node-amplifier {
+  border-color: #16a34a;
+  background-color: rgba(220, 252, 231, 0.5);
+}
+
+.node-generator {
+  border-color: #9333ea;
+  background-color: rgba(243, 232, 255, 0.5);
+}
+
+.node-power-meter, 
+.node-spectrum-analyzer, 
+.node-optical-detector, 
+.node-laser-generator {
+  border-color: #f59e0b;
+  background-color: rgba(254, 243, 199, 0.5);
+  width: 160px;
+  height: auto;
+}
+
+/* Handle styles */
+:deep(.input-handle) {
+  width: 10px;
+  height: 10px;
+  background-color: #3b82f6;
+  border: 2px solid white;
+  transition: all 0.2s ease;
+}
+
+:deep(.output-handle) {
+  width: 10px;
+  height: 10px;
+  background-color: #22c55e;
+  border: 2px solid white;
+  transition: all 0.2s ease;
+}
+
+:deep(.input-handle:hover),
+:deep(.output-handle:hover) {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 </style>

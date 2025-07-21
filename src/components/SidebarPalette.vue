@@ -2,13 +2,78 @@
 import { ref } from 'vue'
 const props = defineProps<{ open: boolean }>()
 
-const blocks = [
-  { type: 'source', label: 'Source de données' },
-  { type: 'modulator', label: 'Modulateur' },
-  { type: 'fiber', label: 'Fibre optique' }
+// Nœuds textuels
+const textBlocks = [
+  { 
+    type: 'source', 
+    label: 'Source Modulée',
+    inputPorts: 0,
+    outputPorts: 1,
+    category: 'text'
+  },
+  { 
+    type: 'amplifier', 
+    label: 'Amplificateur EDFA',
+    inputPorts: 1,
+    outputPorts: 1,
+    category: 'text'
+  },
+  { 
+    type: 'generator', 
+    label: 'Générateur de signal',
+    inputPorts: 0,
+    outputPorts: 1,
+    category: 'text'
+  },
+  { 
+    type: 'fiber', 
+    label: 'Fibre Optique',
+    inputPorts: 1,
+    outputPorts: 1,
+    category: 'text'
+  }
 ]
 
-function onDragStart(event: DragEvent, block: { type: string, label: string }) {
+// Nœuds basés sur des images
+const imageBlocks = [
+  {
+    type: 'power_meter',
+    label: 'Mesureur de Puissance',
+    image: 'Mesureur_Puissance.jpg',
+    inputPorts: 1,
+    outputPorts: 0,
+    category: 'image'
+  },
+  {
+    type: 'spectrum_analyzer',
+    label: 'Analyseur de Spectre',
+    image: 'Analyseur_Spectre.jpg',
+    inputPorts: 1,
+    outputPorts: 0,
+    category: 'image'
+  },
+  {
+    type: 'optical_detector',
+    label: 'Détecteur Optique',
+    image: 'detecteur_optique.jpg',
+    inputPorts: 1,
+    outputPorts: 0,
+    category: 'image'
+  },
+  {
+    type: 'laser_generator',
+    label: 'Générateur Laser',
+    image: 'generateur_laser.jpg',
+    inputPorts: 0,
+    outputPorts: 1,
+    category: 'image'
+  }
+]
+
+// Tous les blocs combinés
+const blocks = [...textBlocks, ...imageBlocks]
+
+function onDragStart(event: DragEvent, block: any) {
   if (event.dataTransfer) {
     event.dataTransfer.setData('application/json', JSON.stringify(block))
     event.dataTransfer.effectAllowed = 'copy'
@@ -24,38 +89,61 @@ function onDragStart(event: DragEvent, block: { type: string, label: string }) {
     <header class="flex items-center justify-between mb-4 relative">
       <div class="flex items-center gap-2">
         <span class="text-blue-500 text-2xl">
-          <!-- Icône cube -->
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" fill="#2563eb"/><rect x="7" y="7" width="10" height="10" rx="2" fill="#fff"/></svg>
         </span>
-        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">Palette de blocs</h2>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">Composants</h2>
       </div>
       <slot name="toggle"></slot>
     </header>
     <div class="border-b border-gray-200 mb-4"></div>
-    <div class="flex-1 space-y-6">
-      <transition-group name="card-fade" tag="div" class="flex flex-col gap-6">
+    
+    <!-- Section des composants textuels -->
+    <h3 class="text-sm font-semibold text-gray-600 mb-3 pl-2">Composants standards</h3>
+    <div class="flex-1 space-y-4 mb-6">
+      <transition-group name="card-fade" tag="div" class="flex flex-col gap-4">
         <div
-          v-for="block in blocks"
+          v-for="block in textBlocks"
           :key="block.type"
-          class="block-card flex items-center space-x-3 p-4 rounded-2xl shadow-md bg-white cursor-move transition-all duration-300 border-2 border-transparent hover:shadow-xl hover:-translate-y-1 group"
+          class="block-card flex items-center space-x-3 p-4 rounded-xl shadow-md bg-white cursor-move transition-all duration-300 border-2 border-transparent hover:shadow-xl hover:-translate-y-1 group"
           :class="{
             'hover:border-blue-400': block.type === 'source',
-            'hover:border-orange-400': block.type === 'modulator',
-            'hover:border-yellow-400': block.type === 'fiber'
+            'hover:border-green-400': block.type === 'amplifier',
+            'hover:border-purple-400': block.type === 'generator'
           }"
           draggable="true"
           @dragstart="onDragStart($event, block)"
         >
-          <span v-if="block.type === 'source'" class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center shadow">
-            <svg width="26" height="26" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#2563eb" /></svg>
+          <span v-if="block.type === 'source'" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shadow">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M2 12 Q6 2 12 12 T22 12" stroke="#2563eb" stroke-width="2" fill="none"/></svg>
           </span>
-          <span v-else-if="block.type === 'modulator'" class="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center shadow">
-            <svg width="26" height="26" viewBox="0 0 20 20"><rect x="4" y="8" width="12" height="4" fill="#f59e42" /></svg>
+          <span v-else-if="block.type === 'amplifier'" class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M4 18 L8 18 L12 6 L16 18 L20 18" stroke="#16a34a" stroke-width="2" fill="none"/></svg>
           </span>
-          <span v-else-if="block.type === 'fiber'" class="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center shadow">
-            <svg width="26" height="26" viewBox="0 0 20 20"><line x1="2" y1="10" x2="18" y2="10" stroke="#eab308" stroke-width="3" /><circle cx="2" cy="10" r="2" fill="#2563eb" /><circle cx="18" cy="10" r="2" fill="#2563eb" /></svg>
+          <span v-else-if="block.type === 'generator'" class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shadow">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M4 12 L8 8 L12 12 L16 16 L20 12" stroke="#9333ea" stroke-width="2" fill="none"/></svg>
           </span>
-          <span class="font-semibold text-gray-800 text-lg">{{ block.label }}</span>
+          <span class="font-semibold text-gray-800 text-sm">{{ block.label }}</span>
+        </div>
+      </transition-group>
+    </div>
+    
+    <!-- Section des composants avec images -->
+    <h3 class="text-sm font-semibold text-gray-600 mb-3 pl-2">Instruments</h3>
+    <div class="flex-1 space-y-4">
+      <transition-group name="card-fade" tag="div" class="flex flex-col gap-4">
+        <div
+          v-for="block in imageBlocks"
+          :key="block.type"
+          class="block-card p-3 rounded-xl shadow-md bg-white cursor-move transition-all duration-300 border-2 border-transparent hover:shadow-xl hover:-translate-y-1"
+          draggable="true"
+          @dragstart="onDragStart($event, block)"
+        >
+          <div class="flex flex-col items-center">
+            <div class="instrument-image-container">
+              <img :src="`/src/assets/${block.image}`" :alt="block.label" class="instrument-image" />
+            </div>
+            <span class="font-semibold text-gray-800 text-sm text-center mt-2">{{ block.label }}</span>
+          </div>
         </div>
       </transition-group>
     </div>
@@ -66,6 +154,8 @@ function onDragStart(event: DragEvent, block: { type: string, label: string }) {
 .sidebar {
   min-width: 18rem;
   max-width: 20rem;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .sidebar-hidden {
   transform: translateX(-100%);
@@ -94,5 +184,37 @@ function onDragStart(event: DragEvent, block: { type: string, label: string }) {
 }
 .block-card:hover {
   box-shadow: 0 8px 24px 0 rgba(31, 41, 55, 0.18);
+}
+
+/* Styles pour les cartes d'instruments avec images */
+.block-card .w-full.h-24 {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.block-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.instrument-image-container {
+  width: 100%;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  padding: 4px;
+}
+
+.instrument-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 </style>
